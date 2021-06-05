@@ -84,7 +84,7 @@ if __name__=="__main__":
     f1_scores  = {"dataset1":[], "dataset2":[]}
         
     
-    for fold in loaders:
+    for fold in tqdm(loaders):
         
         
         lm = LightningModel(model_name=model, vocab_size=tokenizer.vocab_size, config=config)
@@ -99,7 +99,7 @@ if __name__=="__main__":
         # create trainer object
         trainer = create_trainer(
             config=config,
-            run_name=model+str(fold),
+            run_name=model+"-"+str(fold),
             ckpt_path=ckpt_path,
         )
         
@@ -174,22 +174,22 @@ if __name__=="__main__":
         json.dump({
             "dataset1":{
                 "accuracy":{
-                    "mean":np.mean(accuracy_scores['dataset1']),
-                    "std":np.std(accuracy_scores['dataset1']),
+                    "mean":round(np.mean(accuracy_scores['dataset1']), 4)*100,
+                    "std":round(np.std(accuracy_scores['dataset1']), 4)*100,
                 },
                 "f1":{
-                    "mean":np.mean(f1_scores['dataset1']),
-                    "std":np.std(f1_scores['dataset1']),
+                    "mean":round(np.mean(f1_scores['dataset1']), 4)*100,
+                    "std":round(np.std(f1_scores['dataset1']), 4)*100,
                 },
             },
             "dataset2":{
                 "accuracy":{
-                    "mean":np.mean(accuracy_scores['dataset2']),
-                    "std":np.std(accuracy_scores['dataset2']),
+                    "mean":round(np.mean(accuracy_scores['dataset2']), 4)*100,
+                    "std":round(np.std(accuracy_scores['dataset2']), 4)*100,
                 },
                 "f1":{
-                    "mean":np.mean(f1_scores['dataset2']),
-                    "std":np.std(f1_scores['dataset2']),
+                    "mean":round(np.mean(f1_scores['dataset2']), 4),
+                    "std":round(np.std(f1_scores['dataset2']), 4),
                 },
             }
             
