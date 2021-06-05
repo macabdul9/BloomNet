@@ -1,9 +1,6 @@
 # utils
 import torch
 
-# data
-
-
 # models
 import torch.nn as nn
 
@@ -14,6 +11,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from sklearn.metrics import accuracy_score, f1_score
 from models.baselines.LSTM import LSTMClassifier
+from models.baselines.RoBERTa import RoBERTaClassifier
 
 class LightningModel(pl.LightningModule):
 
@@ -32,14 +30,10 @@ class LightningModel(pl.LightningModule):
                 vocab_size=vocab_size,
                 embedding_length=config['model']['hidden_size'],
             )
+        elif model_name=="roberta-base":
+            self.model = RoBERTaClassifier()
         else:
-            self.model = LSTMClassifier(
-                batch_size=config['data']['batch_size'],
-                output_size=config['data']['num_classes'],
-                hidden_size=config['model']['hidden_size'],
-                vocab_size=vocab_size,
-                embedding_length=config['model']['hidden_size'],
-            )
+            self.model = RoBERTaClassifier()
             
 
 

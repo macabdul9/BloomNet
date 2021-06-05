@@ -56,9 +56,9 @@ if __name__=="__main__":
     config['training']['epochs'] = args.epochs
     
     
-    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
-    device = torch.device("cpu")
+    # device = torch.device("cpu")
     
     
     
@@ -165,7 +165,7 @@ if __name__=="__main__":
         torch.cuda.empty_cache()
         gc.collect()
         
-        break # only for debugging
+        # break # only for debugging
         
         
       
@@ -174,12 +174,22 @@ if __name__=="__main__":
         json.dump({
             "dataset1":{
                 "accuracy":{
-                    "mean":np.mean(accuracy_scores['dataset2']),
-                    "std":np.std(accuracy_scores['dataset2']),
+                    "mean":np.mean(accuracy_scores['dataset1']),
+                    "std":np.std(accuracy_scores['dataset1']),
                 },
                 "f1":{
                     "mean":np.mean(f1_scores['dataset1']),
                     "std":np.std(f1_scores['dataset1']),
+                },
+            },
+            "dataset2":{
+                "accuracy":{
+                    "mean":np.mean(accuracy_scores['dataset2']),
+                    "std":np.std(accuracy_scores['dataset2']),
+                },
+                "f1":{
+                    "mean":np.mean(f1_scores['dataset2']),
+                    "std":np.std(f1_scores['dataset2']),
                 },
             }
             

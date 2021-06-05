@@ -53,14 +53,14 @@ def create_trainer(config, run_name, ckpt_path):
 
     trainer = pl.Trainer(
         logger=logger,
-        # gpus=[0],
+        gpus=[0],
         checkpoint_callback=checkpoints,
         callbacks=[early_stopping],
         max_epochs=config['training']["epochs"],
         precision=config['callback']["precision"],
-        limit_train_batches=0.1,
-        limit_val_batches=0.1,
-        limit_test_batches=0.1,
+        limit_train_batches=1.0,
+        limit_val_batches=1.0,
+        limit_test_batches=1.0,
     )
 
     return trainer

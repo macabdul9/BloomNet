@@ -32,7 +32,7 @@ def evaluate(model, loader, device):
         predicted_class += [idx2label[each] for each in outputs.cpu().detach().tolist()]
 
         # limit to evaluate only on one batch comment it before final run
-        break
+        # break
 
     f1 = f1_score(y_true=true_label, y_pred=pred_label, average='macro')
     accuracy = accuracy_score(y_true=true_label, y_pred=pred_label)
