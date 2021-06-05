@@ -1,6 +1,12 @@
+import os
 import torch
 import random
 import numpy as np
+import pytorch_lightning as pl
+from pytorch_lightning.callbacks import EarlyStopping, ProgressBar, ModelCheckpoint
+from pytorch_lightning.loggers import WandbLogger
+from config import config
+
 
 def seed(seed=42):
     random.seed(seed)
@@ -10,4 +16,51 @@ def seed(seed=42):
     torch.cuda.manual_seed_all(seed=seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
-    
+  
+
+def create_logger(project, name):
+
+    logger = WandbLogger(
+        name=name,
+        project=project,
+        save_dir=os.getcwd(),
+        log_model=True,
+    )
+    return logger
+
+def create_early_stopping_and_model_checkpoint(callback_config, ckpt_path):
+
+    early_stopping = EarlyStopping(
+        monitor=callback_config["monitor"],
+        min_delta=callback_config["min_delta"],
+        patience=callback_config['patience'],
+    )
+
+    checkpoints = ModelCheckpoint(
+        filepath=os.path.join(ckpt_path),
+        monitor=callback_config["monitor"],
+        save_top_k=1,
+        verbose=True,
+    )
+
+    return early_stopping, checkpoints
+
+def create_trainer(config, run_name, ckpt_path):
+
+    logger = create_logger(project=config['callback']['project'], name=run_name)
+
+    early_stopping, checkpoints = create_early_stopping_and_model_checkpoint(callback_config=config['callback'], ckpt_path=ckpt_path)
+
+    trainer = pl.Trainer(
+        logger=logger,
+        # gpus=[0],
+        checkpoint_callback=checkpoints,
+        callbacks=[early_stopping],
+        max_epochs=config['training']["epochs"],
+        precision=config['callback']["precision"],
+        limit_train_batches=0.1,
+        limit_val_batches=0.1,
+        limit_test_batches=0.1,
+    )
+
+    return trainer

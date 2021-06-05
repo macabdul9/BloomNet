@@ -3,6 +3,12 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+Outputs/
+wandb/
+
+.vscode/
+
+
 # C extensions
 *.so
 
