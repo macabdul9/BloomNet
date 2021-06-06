@@ -12,6 +12,7 @@ import torch.optim as optim
 from sklearn.metrics import accuracy_score, f1_score
 from models.baselines.LSTM import LSTMClassifier
 from models.baselines.RoBERTa import RoBERTaClassifier
+from models.baselines.DistilRoBERTa import DistilRoBERTaClassifier
 
 class LightningModel(pl.LightningModule):
 
@@ -30,6 +31,8 @@ class LightningModel(pl.LightningModule):
             )
         elif model_name=="roberta-base":
             self.model = RoBERTaClassifier()
+        elif model_name=="distilroberta-base":
+            self.model = DistilRoBERTaClassifier()
         else:
             self.model = RoBERTaClassifier()
             
