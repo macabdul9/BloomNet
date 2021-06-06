@@ -4,7 +4,7 @@ config = {
         "Label":"Label",
         "num_classes":6,
         "max_len":64,
-        "batch_size":4,
+        "batch_size":16,
         "num_workers":4,
         "folds":5,
     },
@@ -20,7 +20,7 @@ config = {
     },
     
     "callback":{
-        "monitor":"val_f1",
+        "monitor":"val_accuracy",
         "min_delta":0.001,
         "patience":5,
         "precision":32,
