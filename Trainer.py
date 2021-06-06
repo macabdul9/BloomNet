@@ -17,6 +17,7 @@ from models.baselines.LSTMAttn import LSTMAttnClassifier
 from models.baselines.CNN import CNNClassifier
 from models.baselines.VDCNN import VDCNNClassifier
 from models.baselines.RCNN import RCNNClassifier
+from models.baselines.SelfAttn import SelfAttnClassifier
 
 class LightningModel(pl.LightningModule):
 
@@ -54,6 +55,13 @@ class LightningModel(pl.LightningModule):
             )
         elif model_name == "vdcnn":
             self.model = VDCNNClassifier(
+                vocab_size=vocab_size,
+                hidden_size=config['model']['hidden_size'],
+                num_classes=config['data']['num_classes']
+            )
+            
+        elif model_name == "self_attn":
+            self.model = SelfAttnClassifier(
                 vocab_size=vocab_size,
                 hidden_size=config['model']['hidden_size'],
                 num_classes=config['data']['num_classes']

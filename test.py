@@ -11,6 +11,7 @@ from models.baselines.LSTMAttn import LSTMAttnClassifier
 from models.baselines.CNN import CNNClassifier
 from models.baselines.VDCNN import VDCNNClassifier
 from models.baselines.RCNN import RCNNClassifier
+from models.baselines.SelfAttn import SelfAttnClassifier
 
 
  
@@ -30,12 +31,10 @@ if __name__ == '__main__':
     #     # num_labels=6
     # )
     
-    model = RCNNClassifier(
-        batch_size=16, 
-        output_size=6, 
-        hidden_size=768, 
+    model = SelfAttnClassifier(
         vocab_size=tokenizer.vocab_size, 
-        embedding_length=768,
+        hidden_size=768,
+        num_classes=6
     )
 
     batch = next(iter(loaders['fold0']['train']))
