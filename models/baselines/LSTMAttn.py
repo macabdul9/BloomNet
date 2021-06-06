@@ -43,9 +43,13 @@ class LSTMAttnClassifier(nn.Module):
         
         embedding = self.embedding(input_ids)
         
-        output, (ht, ct) = self.lstm(embedding)
+        packed_input = pack_padded_sequence(input=embedding, lengths=_len.to(torch.int64).cpu(), batch_first=True, enforce_sorted=False)
+         
+        output, (ht, ct) = self.lstm(packed_input)
         
-        attn_outputs = self.attention_net(output, ht)
+        packed_output, _ = pad_packed_sequence(output, batch_first=True)
+        
+        attn_outputs = self.attention_net(packed_output, ht)
         
         logits = self.classifier(attn_outputs)
         
