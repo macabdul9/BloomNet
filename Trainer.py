@@ -13,6 +13,8 @@ from sklearn.metrics import accuracy_score, f1_score
 from models.baselines.LSTM import LSTMClassifier
 from models.baselines.RoBERTa import RoBERTaClassifier
 from models.baselines.DistilRoBERTa import DistilRoBERTaClassifier
+from models.baselines.LSTMAttn import LSTMAttnClassifier
+from models.baselines.CNN import CNNClassifier
 
 class LightningModel(pl.LightningModule):
 
@@ -24,15 +26,30 @@ class LightningModel(pl.LightningModule):
         
         
         if model_name == 'lstm':
+            
             self.model = LSTMClassifier(
                 vocab_size=vocab_size,
                 hidden_size=config['model']['hidden_size'],
                 num_layers=config['model']['num_layers'],
             )
+            
+        elif model_name == 'lstm_attn':
+            self.model = LSTMAttnClassifier(
+                vocab_size=vocab_size
+            )
+        elif model_name == "cnn":
+            self.model = CNNClassifier(
+                vocab_size=vocab_size,
+            )
+            
         elif model_name=="roberta-base":
+            
             self.model = RoBERTaClassifier()
+            
         elif model_name=="distilroberta-base":
+            
             self.model = DistilRoBERTaClassifier()
+            
         else:
             self.model = RoBERTaClassifier()
             

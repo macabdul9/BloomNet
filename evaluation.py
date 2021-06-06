@@ -23,7 +23,7 @@ def evaluate(model, loader, device):
 
     for batch in tqdm(loader):
 
-        outputs = model(input_ids=batch['input_ids'].to(device), attention_mask=batch['attention_mask'].to(device)).argmax(dim=-1)
+        outputs = model(input_ids=batch['input_ids'].to(device), attention_mask=batch['attention_mask'].to(device), _len=batch['_len']).argmax(dim=-1)
 
         pred_label += outputs.cpu().detach().tolist()
         true_label += batch['target'].cpu().tolist()
