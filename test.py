@@ -9,6 +9,7 @@ import torch.nn as nn
 from models.baselines.LSTM import LSTMClassifier
 from models.baselines.LSTMAttn import LSTMAttnClassifier
 from models.baselines.CNN import CNNClassifier
+from models.baselines.VDCNN import VDCNNClassifier
 
 
  
@@ -23,16 +24,16 @@ if __name__ == '__main__':
     
     loaders = get_loaders(tokenizer=tokenizer, config=config['data'])
     
-    model = CNNClassifier(
+    model = VDCNNClassifier(
         vocab_size=tokenizer.vocab_size,
+        # num_labels=6
     )
-    
 
     batch = next(iter(loaders['fold0']['train']))
     
     logits = model.forward(
         input_ids=batch['input_ids'],
-        _len = batch['_len']
+        # _len = batch['_len']
     )     # packed_output, (ht, ct)
 
     # print(f'packed_output.shape = {packed_output.shape}, ht.shape = {ht.shape}, ct.shape = {ct.shape}')
