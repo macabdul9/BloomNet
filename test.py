@@ -8,6 +8,7 @@ import pandas as pd
 import torch.nn as nn
 from models.baselines.LSTM import LSTMClassifier
 from models.baselines.LSTMAttn import LSTMAttnClassifier
+from models.baselines.CNN import CNNClassifier
 
 
  
@@ -22,7 +23,7 @@ if __name__ == '__main__':
     
     loaders = get_loaders(tokenizer=tokenizer, config=config['data'])
     
-    model = LSTMAttnClassifier(
+    model = CNNClassifier(
         vocab_size=tokenizer.vocab_size,
     )
     

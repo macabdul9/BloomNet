@@ -14,6 +14,7 @@ from models.baselines.LSTM import LSTMClassifier
 from models.baselines.RoBERTa import RoBERTaClassifier
 from models.baselines.DistilRoBERTa import DistilRoBERTaClassifier
 from models.baselines.LSTMAttn import LSTMAttnClassifier
+from models.baselines.CNN import CNNClassifier
 
 class LightningModel(pl.LightningModule):
 
@@ -33,9 +34,12 @@ class LightningModel(pl.LightningModule):
             )
             
         elif model_name == 'lstm_attn':
-            
             self.model = LSTMAttnClassifier(
                 vocab_size=vocab_size
+            )
+        elif model_name == "cnn":
+            self.model = CNNClassifier(
+                vocab_size=vocab_size,
             )
             
         elif model_name=="roberta-base":
