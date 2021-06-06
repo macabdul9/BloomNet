@@ -188,8 +188,8 @@ if __name__=="__main__":
                     "std":round(np.std(accuracy_scores['dataset2']), 4)*100,
                 },
                 "f1":{
-                    "mean":round(np.mean(f1_scores['dataset2']), 4),
-                    "std":round(np.std(f1_scores['dataset2']), 4),
+                    "mean":round(np.mean(f1_scores['dataset2']), 4)*100,
+                    "std":round(np.std(f1_scores['dataset2']), 4)*100,
                 },
             }
             
