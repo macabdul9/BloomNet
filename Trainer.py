@@ -18,6 +18,7 @@ from models.baselines.CNN import CNNClassifier
 from models.baselines.VDCNN import VDCNNClassifier
 from models.baselines.RCNN import RCNNClassifier
 from models.baselines.SelfAttn import SelfAttnClassifier
+from models.baselines.Seq2SeqAttn import Seq2SeqAttnClassifier
 
 class LightningModel(pl.LightningModule):
 
@@ -46,8 +47,7 @@ class LightningModel(pl.LightningModule):
                 batch_size=config['data']['batch_size'], 
                 output_size=config['data']['num_classes'], 
                 hidden_size=config['model']['hidden_size'], 
-                embedding_length=config['model']['hidden_size'],
-                
+                embedding_length=config['model']['hidden_size'],  
             )
         elif model_name == "cnn":
             self.model = CNNClassifier(
@@ -67,6 +67,15 @@ class LightningModel(pl.LightningModule):
                 num_classes=config['data']['num_classes']
             )
             
+        elif model_name == "seq2seq_attn":
+            self.model = Seq2SeqAttnClassifier(
+                vocab_size=vocab_size,
+                hidden_size=config['model']['hidden_size'],
+                bidirectional=config['model']['bidirectional'],
+                num_layers=config['model']['num_layers'],
+                dropout=config['model']['dropout'],
+                num_classes=config['data']['num_classes'],
+            )
         elif model_name=="roberta-base":
             self.model = RoBERTaClassifier()
             

@@ -1,0 +1,12 @@
+               precision    recall  f1-score   support
+
+     Analysis     0.6667    0.8889    0.7619        18
+  Application     0.5000    0.4348    0.4651        23
+Comprehension     0.8000    0.7059    0.7500        17
+   Evaluation     0.7368    0.8235    0.7778        17
+    Knowledge     0.8182    0.8571    0.8372        21
+    Synthesis     0.7000    0.5833    0.6364        24
+
+     accuracy                         0.7000       120
+    macro avg     0.7036    0.7156    0.7047       120
+ weighted avg     0.6967    0.7000    0.6937       120

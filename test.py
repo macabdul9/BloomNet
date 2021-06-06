@@ -12,6 +12,7 @@ from models.baselines.CNN import CNNClassifier
 from models.baselines.VDCNN import VDCNNClassifier
 from models.baselines.RCNN import RCNNClassifier
 from models.baselines.SelfAttn import SelfAttnClassifier
+from models.baselines.Seq2SeqAttn import Seq2SeqAttnClassifier
 
 
  
@@ -31,10 +32,13 @@ if __name__ == '__main__':
     #     # num_labels=6
     # )
     
-    model = SelfAttnClassifier(
+    model = Seq2SeqAttnClassifier(
         vocab_size=tokenizer.vocab_size, 
-        hidden_size=768,
-        num_classes=6
+        hidden_size=678, 
+        bidirectional=True, 
+        num_layers=2, 
+        dropout=0.10, 
+        num_classes=6,
     )
 
     batch = next(iter(loaders['fold0']['train']))

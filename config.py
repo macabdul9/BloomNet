@@ -10,8 +10,10 @@ config = {
     },
     
     "model":{
+        "bidirectional":True,
         "hidden_size":768,
-        "num_layers":4, # for lstm like models
+        "num_layers":4, # for lstm like models but will be same for all models 
+        "dropout":0.10, # for lstm like models but will be same for all models
     },
 
     "training":{
