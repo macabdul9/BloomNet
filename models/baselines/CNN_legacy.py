@@ -7,7 +7,7 @@ from torch.autograd import Variable
 from torch.nn import functional as F
 
 class CNN(nn.Module):
-	def __init__(self, batch_size, output_size, in_channels, out_channels, kernel_heights, stride, padding, keep_probab, vocab_size, embedding_length, weights):
+	def __init__(self, batch_size, output_size, in_channels, out_channels, kernel_heights, stride, padding, keep_probab, vocab_size, embedding_length):
 		super(CNN, self).__init__()
 		
 		"""

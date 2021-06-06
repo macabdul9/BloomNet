@@ -16,6 +16,7 @@ from models.baselines.DistilRoBERTa import DistilRoBERTaClassifier
 from models.baselines.LSTMAttn import LSTMAttnClassifier
 from models.baselines.CNN import CNNClassifier
 from models.baselines.VDCNN import VDCNNClassifier
+from models.baselines.RCNN import RCNNClassifier
 
 class LightningModel(pl.LightningModule):
 
@@ -37,6 +38,15 @@ class LightningModel(pl.LightningModule):
         elif model_name == 'lstm_attn':
             self.model = LSTMAttnClassifier(
                 vocab_size=vocab_size
+            )
+        elif model_name == 'rcnn':
+            self.model = RCNNClassifier(
+                vocab_size=vocab_size,
+                batch_size=config['data']['batch_size'], 
+                output_size=config['data']['num_classes'], 
+                hidden_size=config['model']['hidden_size'], 
+                embedding_length=config['model']['hidden_size'],
+                
             )
         elif model_name == "cnn":
             self.model = CNNClassifier(

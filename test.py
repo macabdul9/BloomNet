@@ -10,6 +10,7 @@ from models.baselines.LSTM import LSTMClassifier
 from models.baselines.LSTMAttn import LSTMAttnClassifier
 from models.baselines.CNN import CNNClassifier
 from models.baselines.VDCNN import VDCNNClassifier
+from models.baselines.RCNN import RCNNClassifier
 
 
  
@@ -24,9 +25,17 @@ if __name__ == '__main__':
     
     loaders = get_loaders(tokenizer=tokenizer, config=config['data'])
     
-    model = VDCNNClassifier(
-        vocab_size=tokenizer.vocab_size,
-        # num_labels=6
+    # model = VDCNNClassifier(
+    #     vocab_size=tokenizer.vocab_size,
+    #     # num_labels=6
+    # )
+    
+    model = RCNNClassifier(
+        batch_size=16, 
+        output_size=6, 
+        hidden_size=768, 
+        vocab_size=tokenizer.vocab_size, 
+        embedding_length=768,
     )
 
     batch = next(iter(loaders['fold0']['train']))
