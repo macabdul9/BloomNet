@@ -2,12 +2,14 @@ import torch
 from transformers import AutoTokenizer
 from config import config
 from dataset.loader import get_loaders
-from models.baselines.LSTM import LSTMClassifier
 from config import config
 from evaluation import evaluate
 import pandas as pd
 import torch.nn as nn
-from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
+from models.baselines.LSTM import LSTMClassifier
+from models.baselines.LSTMAttn import LSTMAttnClassifier
+
+
  
 import torch.nn.functional as F
 
@@ -20,9 +22,8 @@ if __name__ == '__main__':
     
     loaders = get_loaders(tokenizer=tokenizer, config=config['data'])
     
-    model = LSTMClassifier(
+    model = LSTMAttnClassifier(
         vocab_size=tokenizer.vocab_size,
-        num_layers=4
     )
     
 

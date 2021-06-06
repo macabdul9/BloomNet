@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
-
 class LSTMClassifier(nn.Module):
     
     def __init__(self, vocab_size, hidden_size=768, dropout=0.10, num_layers=1, bidirectional=True, num_classes=6):
