@@ -18,7 +18,7 @@ class RoBERTaClassifier(nn.Module):
             nn.Linear(in_features=256, out_features=num_classes),
         ])
 
-    def forward(self, input_ids, attention_mask=None):
+    def forward(self, input_ids, attention_mask=None, _len=None):
 
         # last hidden states
         outputs = self.base(input_ids=input_ids, attention_mask=attention_mask)

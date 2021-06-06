@@ -10,7 +10,8 @@ config = {
     },
     
     "model":{
-        "hidden_size":768
+        "hidden_size":768,
+        "num_layers":4, # for lstm like models
     },
 
     "training":{

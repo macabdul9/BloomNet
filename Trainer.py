@@ -24,11 +24,9 @@ class LightningModel(pl.LightningModule):
         
         if model_name == 'lstm':
             self.model = LSTMClassifier(
-                batch_size=config['data']['batch_size'],
-                output_size=config['data']['num_classes'],
-                hidden_size=config['model']['hidden_size'],
                 vocab_size=vocab_size,
-                embedding_length=config['model']['hidden_size'],
+                hidden_size=config['model']['hidden_size'],
+                num_layers=config['model']['num_layers'],
             )
         elif model_name=="roberta-base":
             self.model = RoBERTaClassifier()
@@ -37,8 +35,8 @@ class LightningModel(pl.LightningModule):
             
 
 
-    def forward(self, input_ids, attention_mask=None):
-        logits  = self.model(input_ids=input_ids, attention_mask=attention_mask)
+    def forward(self, input_ids, attention_mask=None, _len=None):
+        logits  = self.model(input_ids=input_ids, attention_mask=attention_mask, _len=_len)
         return logits
 
     def configure_optimizers(self):
@@ -46,7 +44,7 @@ class LightningModel(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         input_ids, attention_mask, targets = batch['input_ids'], batch['attention_mask'], batch['target'].squeeze()
-        logits = self(input_ids=input_ids, attention_mask=attention_mask)
+        logits = self(input_ids=input_ids, attention_mask=attention_mask, _len=batch['_len'])
         loss = F.cross_entropy(logits, targets)
         acc = accuracy_score(targets.cpu(), logits.argmax(dim=-1).cpu())
         f1 = f1_score(targets.cpu(), logits.argmax(dim=-1).cpu(), average=self.config['training']['average'])
@@ -55,7 +53,7 @@ class LightningModel(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         input_ids, attention_mask, targets = batch['input_ids'], batch['attention_mask'], batch['target'].squeeze()
-        logits = self(input_ids=input_ids, attention_mask=attention_mask)
+        logits = self(input_ids=input_ids, attention_mask=attention_mask, _len=batch['_len'])
         loss = F.cross_entropy(logits, targets)
         acc = accuracy_score(targets.cpu(), logits.argmax(dim=-1).cpu())
         f1 = f1_score(targets.cpu(), logits.argmax(dim=-1).cpu(), average=self.config['training']['average'])
@@ -70,7 +68,7 @@ class LightningModel(pl.LightningModule):
 
     def test_step(self, batch, batch_idx):
         input_ids, attention_mask, targets = batch['input_ids'], batch['attention_mask'], batch['target'].squeeze()
-        logits = self(input_ids=input_ids, attention_mask=attention_mask)
+        logits = self(input_ids=input_ids, attention_mask=attention_mask, _len=batch['_len'])
         loss = F.cross_entropy(logits, targets)
         acc = accuracy_score(targets.cpu(), logits.argmax(dim=-1).cpu())
         f1 = f1_score(targets.cpu(), logits.argmax(dim=-1).cpu(), average=self.config['training']['average'])
