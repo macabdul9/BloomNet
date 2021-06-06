@@ -2,7 +2,7 @@ import torch
 from transformers import AutoTokenizer
 from config import config
 from dataset.loader import get_loaders
-from models.baselines.LSTM_old import LSTMClassifier
+from models.baselines.LSTM import LSTMClassifier
 from config import config
 from evaluation import evaluate
 import pandas as pd
@@ -31,9 +31,7 @@ if __name__ == '__main__':
     logits = model.forward(
         input_ids=batch['input_ids'],
         _len = batch['_len']
-    )
-    
-    # packed_output, output_lengths = pad_packed_sequence(packed_output, batch_first=True)
+    )     # packed_output, (ht, ct)
 
     # print(f'packed_output.shape = {packed_output.shape}, ht.shape = {ht.shape}, ct.shape = {ct.shape}')
     
@@ -42,7 +40,7 @@ if __name__ == '__main__':
     
     
     # df = pd.DataFrame(
-    #     data={
+    #     data={https://www.overleaf.com/project/60ab65e1d0322cadbd7bf947
     #         "Ground_Truth":ground_truth,
     #         "Predicted_Class":predicted_class
     #     }

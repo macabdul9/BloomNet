@@ -38,9 +38,9 @@ class LSTMClassifier(nn.Module):
         
         # classification module
         self.classifier = nn.Sequential(*[
-            nn.Linear(in_features=hidden_size, out_features=hidden_size//2),
+            nn.Linear(in_features=hidden_size, out_features=hidden_size),
             nn.LeakyReLU(),
-            nn.Linear(in_features=hidden_size//2, out_features=num_classes)
+            nn.Linear(in_features=hidden_size, out_features=num_classes)
         ])
         
     def forward(self, input_ids, _len, attention_mask=None):
@@ -54,15 +54,22 @@ class LSTMClassifier(nn.Module):
         """
         embedding =  self.embedding(input_ids)
         
-        packed_input = pack_padded_sequence(input=embedding, lengths=_len, batch_first=True, enforce_sorted=False)
+        packed_input = pack_padded_sequence(input=embedding, lengths=_len.to(torch.int64).cpu(), batch_first=True, enforce_sorted=False)
         
         packed_output, (ht, ct) = self.lstm(packed_input)
+        
+        # packed_output, _ = pad_packed_sequence(packed_output, batch_first=True)
+        
+        # take mean of last hidden states
+        # features = packed_output.mean(dim=1).squeeze()
+
         
         features = ht.permute(1, 0, 2).mean(1)  # [2, batch_size, hidden_size] -> [batch, hidden_size]
         
         logits = self.classifier(features)
         
         return logits
+        # return packed_output, (ht, ct)
 
         
         
