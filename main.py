@@ -177,7 +177,7 @@ if __name__=="__main__":
                     "mean":round(np.mean(accuracy_scores['dataset1']), 4)*100,
                     "std":round(np.std(accuracy_scores['dataset1']), 4)*100,
                 },
-                "f1":{
+                "macro-f1":{
                     "mean":round(np.mean(f1_scores['dataset1']), 4)*100,
                     "std":round(np.std(f1_scores['dataset1']), 4)*100,
                 },
@@ -187,7 +187,7 @@ if __name__=="__main__":
                     "mean":round(np.mean(accuracy_scores['dataset2']), 4)*100,
                     "std":round(np.std(accuracy_scores['dataset2']), 4)*100,
                 },
-                "f1":{
+                "macro-f1":{
                     "mean":round(np.mean(f1_scores['dataset2']), 4)*100,
                     "std":round(np.std(f1_scores['dataset2']), 4)*100,
                 },
@@ -201,4 +201,4 @@ if __name__=="__main__":
     del accuracy_scores
     gc.collect()
     
-    print("Run Succesfull !")
+    print("Run Successfull!")
