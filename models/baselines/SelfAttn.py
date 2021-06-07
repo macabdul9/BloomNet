@@ -1,6 +1,7 @@
 # _*_ coding: utf-8 _*_
 
 # Source: https://github.com/prakashpandey9/Text-Classification-Pytorch/blob/master/models/selfAttention.py
+# Citation: https://github.com/prakashpandey9/Text-Classification-Pytorch
 
 import torch
 import torch.nn as nn
