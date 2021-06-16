@@ -331,6 +331,9 @@ class Model(torch.nn.Module):
         # hx shape: batch, hidden_size
 
         input = self.embedding(input=input_ids)
+
+        input = input.permute(1, 0, 2)
+
         is_packed = isinstance(input, torch.nn.utils.rnn.PackedSequence)
         if is_packed:
             input, batch_sizes = input[:2]
@@ -374,8 +377,10 @@ class Model(torch.nn.Module):
         # if packed:
         # out: (sum(seq_len), num_directions * hidden_size)
         # ht: (num_layers * num_directions, batch, hidden_size)
+
+        # print(f'ht.shape = {ht.shape} | out.shape = {out.shape}')
         
-        logits = self.logits(out.mean(dim=1).squeeze())
+        logits = self.logits(ht.squeeze())
 
         return logits
 
