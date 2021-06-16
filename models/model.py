@@ -5,6 +5,7 @@ import torch.nn as nn
 import itertools
 import torch.nn.functional as F
 import geoopt.manifolds.poincare.math as pmath
+from transformers import AutoModel
 
 
 class LookupEmbedding(nn.Module):
@@ -317,7 +318,8 @@ class Model(torch.nn.Module):
         self.nonlin = nonlin
         self.hyperbolic_input = hyperbolic_input
         self.hyperbolic_hidden_state0 = hyperbolic_hidden_state0
-        self.logits = MobiusDist2Hyperplane(hidden_size, out_features=num_classes)
+        self.bert = AutoModel.from_pretrained(pretrained_model_name_or_path="roberta-base")
+        self.logits = MobiusDist2Hyperplane(2*hidden_size, out_features=num_classes)
         self.reset_parameters()
 
     def reset_parameters(self):
@@ -331,6 +333,8 @@ class Model(torch.nn.Module):
         # hx shape: batch, hidden_size
 
         input = self.embedding(input=input_ids)
+
+        bert_embedding = self.bert(input_ids=input_ids, attention_mask=attention_mask)[0][:, 0]
 
         input = input.permute(1, 0, 2)
 
@@ -380,7 +384,7 @@ class Model(torch.nn.Module):
 
         # print(f'ht.shape = {ht.shape} | out.shape = {out.shape}')
         
-        logits = self.logits(ht.squeeze())
+        logits = self.logits(torch.cat((ht.squeeze(), bert_embedding), dim=1))
 
         return logits
 
