@@ -9,6 +9,7 @@ import wandb
 import pytorch_lightning as pl
 import torch.nn.functional as F
 import torch.optim as optim
+import geoopt
 from sklearn.metrics import accuracy_score, f1_score
 from models.baselines.LSTM import LSTMClassifier
 from models.baselines.RoBERTa import RoBERTaClassifier
@@ -19,6 +20,7 @@ from models.baselines.VDCNN import VDCNNClassifier
 from models.baselines.RCNN import RCNNClassifier
 from models.baselines.SelfAttn import SelfAttnClassifier
 from models.baselines.Seq2SeqAttn import Seq2SeqAttnClassifier
+from models.model import Model
 
 class LightningModel(pl.LightningModule):
 
@@ -27,9 +29,23 @@ class LightningModel(pl.LightningModule):
         super(LightningModel, self).__init__()
 
         self.config = config
+        self.model_name = model_name
         
-        
-        if model_name == 'lstm':
+        if model_name == "model" or model_name=="hyp" or model_name == "hyrnn":
+            self.model = Model(
+                vocab_size=vocab_size,
+                num_layers=1,
+                bias=True,
+                nonlin=None,
+                hyperbolic_input=True,
+                hyperbolic_hidden_state0=True,
+                num_classes=config['data']['num_classes'],
+                input_size=config['model']['hidden_size'],
+                hidden_size=config['model']['hidden_size'],
+                c=1.0,
+            )
+
+        elif model_name == 'lstm':
             
             self.model = LSTMClassifier(
                 vocab_size=vocab_size,
@@ -93,7 +109,14 @@ class LightningModel(pl.LightningModule):
         return logits
 
     def configure_optimizers(self):
-        return optim.AdamW(params=self.parameters(), lr=self.config['training']['lr'])
+        # euclidean optimizer vs HyRNN
+        if self.model_name == "model" or self.model_name=="hyp" or self.model_name == "hyrnn":
+            return geoopt.optim.RiemannianAdam(
+                self.parameters(),
+                lr=self.config['training']['lr'],
+                stabilize=10,
+            )
+        else: return optim.AdamW(params=self.parameters(), lr=self.config['training']['lr'])
 
     def training_step(self, batch, batch_idx):
         input_ids, attention_mask, targets = batch['input_ids'], batch['attention_mask'], batch['target'].squeeze()

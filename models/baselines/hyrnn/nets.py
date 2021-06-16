@@ -1,104 +1,9 @@
-import torch
-import geoopt
-import math
-import torch.nn as nn
 import itertools
-import torch.nn.functional as F
+import torch.nn
+import torch.nn.functional
+import math
 import geoopt.manifolds.poincare.math as pmath
-
-
-class LookupEmbedding(nn.Module):
-    r"""A lookup table for embeddings, similar to :meth:`torch.nn.Embedding`,
-    that replaces operations with their Poincare-ball counterparts.
-
-    This module is intended to be used for word embeddings,
-    retrieved by their indices.
-
-    Args:
-        num_embeddings (int): size of the dictionary of embeddings
-        embedding_dim
-        (int or tuple of ints): the shape of each embedding;
-                                would've been better named embedding_shape,
-                                if not for desirable name-level compatibility
-                                with nn.Embedding;
-                                embedding is commonly a vector,
-                                but we do not impose such restriction
-                                so as to not prohibit e.g. Stiefel embeddings.
-
-    Attributes:
-        weight (Tensor): the learnable weights of the module of shape (num_embeddings, *embedding_dim).
-
-    Shape:
-        - Input: :math:`(*)`, LongTensor of arbitrary shape containing the indices to extract
-        - Output: :math:`(*, H)`, where `*` is the input shape and :math:`H=\text{embedding\_dim}`
-    """
-
-    def __init__(
-        self, num_embeddings, embedding_dim, manifold=geoopt.Euclidean(), _weight=None
-    ):
-        super(LookupEmbedding, self).__init__()
-        if isinstance(embedding_dim, int):
-            embedding_dim = (embedding_dim,)
-        self.num_embeddings = num_embeddings
-        self.embedding_dim = embedding_dim
-        self.manifold = manifold
-
-        if _weight is None:
-            _weight = torch.Tensor(num_embeddings, *embedding_dim)
-            self.weight = geoopt.ManifoldParameter(_weight, manifold=self.manifold)
-            self.reset_parameters()
-        else:
-            assert _weight.shape == (
-                num_embeddings,
-                *embedding_dim,
-            ), "_weight MUST be of shape (num_embeddings, *embedding_dim)"
-            self.weight = geoopt.ManifoldParameter(_weight, manifold=self.manifold)
-
-    def reset_parameters(self):
-        # TODO: allow some sort of InitPolicy
-        #       as LookupEmbedding's parameter
-        #       for e.g. random init;
-        #       at the moment, you're supposed
-        #       to do actual init on your own
-        #       in the client code.
-        with torch.no_grad():
-            self.weight.fill_(0)
-
-    def forward(self, input):
-        shape = list(input.shape) + list(self.weight.shape[1:])
-        shape = tuple(shape)
-        return self.weight.index_select(0, input.reshape(-1)).view(shape)
-
-
-class MobiusDist2Hyperplane(torch.nn.Module):
-    def __init__(self, in_features, out_features, c=1.0):
-        super().__init__()
-        self.in_features = in_features
-        self.out_features = out_features
-        self.ball = ball = geoopt.PoincareBall(c=c)
-        self.sphere = sphere = geoopt.manifolds.Sphere()
-        self.scale = torch.nn.Parameter(torch.zeros(out_features))
-        point = torch.randn(out_features, in_features) / 4
-        point = pmath.expmap0(point, c=c)
-        tangent = torch.randn(out_features, in_features)
-        self.point = geoopt.ManifoldParameter(point, manifold=ball)
-        with torch.no_grad():
-            self.tangent = geoopt.ManifoldParameter(tangent, manifold=sphere).proj_()
-
-    def forward(self, input):
-        input = input.unsqueeze(-2)
-        distance = pmath.dist2plane(
-            x=input, p=self.point, a=self.tangent, c=self.ball.c, signed=True
-        )
-        return distance * self.scale.exp()
-
-    def extra_repr(self):
-        return (
-            "in_features={in_features}, out_features={out_features}, "
-            "c={ball.c}".format(
-                **self.__dict__
-            )
-        )
+import geoopt
 
 
 def mobius_linear(
@@ -260,35 +165,57 @@ class MobiusLinear(torch.nn.Linear):
         return info
 
 
+class MobiusDist2Hyperplane(torch.nn.Module):
+    def __init__(self, in_features, out_features, c=1.0):
+        super().__init__()
+        self.in_features = in_features
+        self.out_features = out_features
+        self.ball = ball = geoopt.PoincareBall(c=c)
+        self.sphere = sphere = geoopt.manifolds.Sphere()
+        self.scale = torch.nn.Parameter(torch.zeros(out_features))
+        point = torch.randn(out_features, in_features) / 4
+        point = pmath.expmap0(point, c=c)
+        tangent = torch.randn(out_features, in_features)
+        self.point = geoopt.ManifoldParameter(point, manifold=ball)
+        with torch.no_grad():
+            self.tangent = geoopt.ManifoldParameter(tangent, manifold=sphere).proj_()
 
-class Model(torch.nn.Module):
+    def forward(self, input):
+        input = input.unsqueeze(-2)
+        distance = pmath.dist2plane(
+            x=input, p=self.point, a=self.tangent, c=self.ball.c, signed=True
+        )
+        return distance * self.scale.exp()
+
+    def extra_repr(self):
+        return (
+            "in_features={in_features}, out_features={out_features}, "
+            "c={ball.c}".format(
+                **self.__dict__
+            )
+        )
+
+
+
+class MobiusGRU(torch.nn.Module):
     def __init__(
         self,
-        vocab_size,
+        input_size,
+        hidden_size,
         num_layers=1,
         bias=True,
         nonlin=None,
         hyperbolic_input=True,
         hyperbolic_hidden_state0=True,
         num_classes=6,
-        input_size=768,
-        hidden_size=768,
         c=1.0,
     ):
-        super(Model, self).__init__()
+        super().__init__()
         self.ball = geoopt.PoincareBall(c=c)
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.num_layers = num_layers
         self.bias = bias
-
-
-        self.embedding = LookupEmbedding(
-            num_embeddings=vocab_size, 
-            embedding_dim=hidden_size, 
-            manifold=geoopt.PoincareBall(c=c),
-
-        )
         self.weight_ih = torch.nn.ParameterList(
             [
                 torch.nn.Parameter(
@@ -325,12 +252,9 @@ class Model(torch.nn.Module):
         for weight in itertools.chain.from_iterable([self.weight_ih, self.weight_hh]):
             torch.nn.init.uniform_(weight, -stdv, stdv)
 
-    def forward(self, input_ids: torch.Tensor, attention_mask=None, _len=None, h0=None):
-
+    def forward(self, input: torch.Tensor, h0=None):
         # input shape: seq_len, batch, input_size
         # hx shape: batch, hidden_size
-
-        input = self.embedding(input=input_ids)
         is_packed = isinstance(input, torch.nn.utils.rnn.PackedSequence)
         if is_packed:
             input, batch_sizes = input[:2]
@@ -377,7 +301,7 @@ class Model(torch.nn.Module):
         
         logits = self.logits(out.mean(dim=1).squeeze())
 
-        return logits
+        return logits, out, ht
 
     def extra_repr(self):
         return (
@@ -386,4 +310,3 @@ class Model(torch.nn.Module):
             "hyperbolic_hidden_state0={hyperbolic_hidden_state0}, "
             "c={self.ball.c}"
         ).format(**self.__dict__, self=self, bias=self.bias is not None)
-

@@ -1,13 +1,20 @@
 import torch
-import geoopt
-import math
 import torch.nn as nn
-import itertools
-import torch.nn.functional as F
 import geoopt.manifolds.poincare.math as pmath
+import geoopt
+
+# from hyrnn.lookup_embedding import LookupEmbedding
+# from hyrnn.nets import MobiusGRU
+
+import functools
 
 
-class LookupEmbedding(nn.Module):
+import torch
+from torch.nn.modules.module import Module
+import geoopt
+
+
+class LookupEmbedding(Module):
     r"""A lookup table for embeddings, similar to :meth:`torch.nn.Embedding`,
     that replaces operations with their Poincare-ball counterparts.
 
@@ -69,36 +76,12 @@ class LookupEmbedding(nn.Module):
         shape = tuple(shape)
         return self.weight.index_select(0, input.reshape(-1)).view(shape)
 
-
-class MobiusDist2Hyperplane(torch.nn.Module):
-    def __init__(self, in_features, out_features, c=1.0):
-        super().__init__()
-        self.in_features = in_features
-        self.out_features = out_features
-        self.ball = ball = geoopt.PoincareBall(c=c)
-        self.sphere = sphere = geoopt.manifolds.Sphere()
-        self.scale = torch.nn.Parameter(torch.zeros(out_features))
-        point = torch.randn(out_features, in_features) / 4
-        point = pmath.expmap0(point, c=c)
-        tangent = torch.randn(out_features, in_features)
-        self.point = geoopt.ManifoldParameter(point, manifold=ball)
-        with torch.no_grad():
-            self.tangent = geoopt.ManifoldParameter(tangent, manifold=sphere).proj_()
-
-    def forward(self, input):
-        input = input.unsqueeze(-2)
-        distance = pmath.dist2plane(
-            x=input, p=self.point, a=self.tangent, c=self.ball.c, signed=True
-        )
-        return distance * self.scale.exp()
-
-    def extra_repr(self):
-        return (
-            "in_features={in_features}, out_features={out_features}, "
-            "c={ball.c}".format(
-                **self.__dict__
-            )
-        )
+import itertools
+import torch.nn
+import torch.nn.functional
+import math
+import geoopt.manifolds.poincare.math as pmath
+import geoopt
 
 
 def mobius_linear(
@@ -260,35 +243,55 @@ class MobiusLinear(torch.nn.Linear):
         return info
 
 
+class MobiusDist2Hyperplane(torch.nn.Module):
+    def __init__(self, in_features, out_features, c=1.0):
+        super().__init__()
+        self.in_features = in_features
+        self.out_features = out_features
+        self.ball = ball = geoopt.PoincareBall(c=c)
+        self.sphere = sphere = geoopt.manifolds.Sphere()
+        self.scale = torch.nn.Parameter(torch.zeros(out_features))
+        point = torch.randn(out_features, in_features) / 4
+        point = pmath.expmap0(point, c=c)
+        tangent = torch.randn(out_features, in_features)
+        self.point = geoopt.ManifoldParameter(point, manifold=ball)
+        with torch.no_grad():
+            self.tangent = geoopt.ManifoldParameter(tangent, manifold=sphere).proj_()
 
-class Model(torch.nn.Module):
+    def forward(self, input):
+        input = input.unsqueeze(-2)
+        distance = pmath.dist2plane(
+            x=input, p=self.point, a=self.tangent, c=self.ball.c, signed=True
+        )
+        return distance * self.scale.exp()
+
+    def extra_repr(self):
+        return (
+            "in_features={in_features}, out_features={out_features}, "
+            "c={ball.c}".format(
+                **self.__dict__
+            )
+        )
+
+
+class MobiusGRU(torch.nn.Module):
     def __init__(
         self,
-        vocab_size,
+        input_size,
+        hidden_size,
         num_layers=1,
         bias=True,
         nonlin=None,
         hyperbolic_input=True,
         hyperbolic_hidden_state0=True,
-        num_classes=6,
-        input_size=768,
-        hidden_size=768,
         c=1.0,
     ):
-        super(Model, self).__init__()
+        super().__init__()
         self.ball = geoopt.PoincareBall(c=c)
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.num_layers = num_layers
         self.bias = bias
-
-
-        self.embedding = LookupEmbedding(
-            num_embeddings=vocab_size, 
-            embedding_dim=hidden_size, 
-            manifold=geoopt.PoincareBall(c=c),
-
-        )
         self.weight_ih = torch.nn.ParameterList(
             [
                 torch.nn.Parameter(
@@ -317,7 +320,6 @@ class Model(torch.nn.Module):
         self.nonlin = nonlin
         self.hyperbolic_input = hyperbolic_input
         self.hyperbolic_hidden_state0 = hyperbolic_hidden_state0
-        self.logits = MobiusDist2Hyperplane(hidden_size, out_features=num_classes)
         self.reset_parameters()
 
     def reset_parameters(self):
@@ -325,12 +327,9 @@ class Model(torch.nn.Module):
         for weight in itertools.chain.from_iterable([self.weight_ih, self.weight_hh]):
             torch.nn.init.uniform_(weight, -stdv, stdv)
 
-    def forward(self, input_ids: torch.Tensor, attention_mask=None, _len=None, h0=None):
-
+    def forward(self, input: torch.Tensor, h0=None):
         # input shape: seq_len, batch, input_size
         # hx shape: batch, hidden_size
-
-        input = self.embedding(input=input_ids)
         is_packed = isinstance(input, torch.nn.utils.rnn.PackedSequence)
         if is_packed:
             input, batch_sizes = input[:2]
@@ -374,10 +373,7 @@ class Model(torch.nn.Module):
         # if packed:
         # out: (sum(seq_len), num_directions * hidden_size)
         # ht: (num_layers * num_directions, batch, hidden_size)
-        
-        logits = self.logits(out.mean(dim=1).squeeze())
-
-        return logits
+        return out, ht
 
     def extra_repr(self):
         return (
@@ -387,3 +383,163 @@ class Model(torch.nn.Module):
             "c={self.ball.c}"
         ).format(**self.__dict__, self=self, bias=self.bias is not None)
 
+
+class RNNBase(nn.Module):
+    def __init__(
+        self,
+        vocab_size,
+        embedding_dim,
+        hidden_dim,
+        project_dim,
+        cell_type="_rnn",
+        embedding_type="eucl",
+        decision_type="eucl",
+        use_distance_as_feature=True,
+        device=None,
+        num_layers=1,
+        num_classes=1,
+        c=1.0,
+    ):
+        super(RNNBase, self).__init__()
+        (cell_type, embedding_type, decision_type) = map(
+            str.lower, [cell_type, embedding_type, decision_type]
+        )
+        if embedding_type == "eucl":
+            self.embedding = LookupEmbedding(
+                vocab_size, embedding_dim, manifold=geoopt.Euclidean()
+            )
+            with torch.no_grad():
+                self.embedding.weight.normal_()
+        elif embedding_type == "hyp":
+            self.embedding = LookupEmbedding(
+                vocab_size,
+                embedding_dim,
+                manifold=geoopt.PoincareBall(c=c),
+            )
+            with torch.no_grad():
+                self.embedding.weight.set_(
+                    pmath.expmap0(self.embedding.weight.normal_() / 10, c=c)
+                )
+        else:
+            raise NotImplementedError(
+                "Unsuported embedding type: {0}".format(embedding_type)
+            )
+        self.embedding_type = embedding_type
+        if decision_type == "eucl":
+            self.projector = nn.Linear(hidden_dim * 2, project_dim)
+            self.logits = nn.Linear(project_dim, num_classes)
+        elif decision_type == "hyp":
+            self.projector_source = MobiusLinear(
+                hidden_dim, project_dim, c=c
+            )
+            self.projector_target = MobiusLinear(
+                hidden_dim, project_dim, c=c
+            )
+            self.logits = MobiusDist2Hyperplane(project_dim, num_classes)
+        else:
+            raise NotImplementedError(
+                "Unsuported decision type: {0}".format(decision_type)
+            )
+        self.ball = geoopt.PoincareBall(c)
+        if use_distance_as_feature:
+            if decision_type == "eucl":
+                self.dist_bias = nn.Parameter(torch.zeros(project_dim))
+            else:
+                self.dist_bias = geoopt.ManifoldParameter(
+                    torch.zeros(project_dim), manifold=self.ball
+                )
+        else:
+            self.register_buffer("dist_bias", None)
+        self.decision_type = decision_type
+        self.use_distance_as_feature = use_distance_as_feature
+        self.device = device  # declaring device here due to fact we are using catalyst
+        self.num_layers = num_layers
+        self.hidden_dim = hidden_dim
+        self.c = c
+
+        if cell_type == "eucl_rnn":
+            self.cell = nn.RNN
+        elif cell_type == "eucl_gru":
+            self.cell = nn.GRU
+        elif cell_type == "hyp_gru":
+            self.cell = functools.partial(MobiusGRU, c=c)
+        else:
+            raise NotImplementedError("Unsuported cell type: {0}".format(cell_type))
+        self.cell_type = cell_type
+
+        self.cell_source = self.cell(embedding_dim, self.hidden_dim, self.num_layers)
+        self.cell_target = self.cell(embedding_dim, self.hidden_dim, self.num_layers)
+
+    def forward(self, input, _len):
+
+
+        source_input = input #input[0]
+        # target_input = input[1]
+        # alignment = input[2]
+        batch_size = source_input.shape[0]
+
+        source_input_data = self.embedding(source_input.data)
+        # target_input_data = self.embedding(target_input.data)
+
+        zero_hidden = torch.zeros(
+            self.num_layers,
+            batch_size,
+            self.hidden_dim,
+            device=self.device or source_input.device,
+            dtype=source_input_data.dtype
+        )
+
+        if self.embedding_type == "eucl" and "hyp" in self.cell_type:
+            source_input_data = pmath.expmap0(source_input_data, c=self.c)
+            # target_input_data = pmath.expmap0(target_input_data, c=self.c)
+        elif self.embedding_type == "hyp" and "eucl" in self.cell_type:
+            source_input_data = pmath.logmap0(source_input_data, c=self.c)
+            # target_input_data = pmath.logmap0(target_input_data, c=self.c)
+        # ht: (num_layers * num_directions, batch, hidden_size)
+
+        source_input = torch.nn.utils.rnn.PackedSequence(
+            source_input_data, _len=_len, #source_input.batch_sizes
+        )
+        # target_input = torch.nn.utils.rnn.PackedSequence(
+        #     target_input_data, target_input.batch_sizes
+        # )
+
+        _, source_hidden = self.cell_source(source_input, zero_hidden)
+        # _, target_hidden = self.cell_target(target_input, zero_hidden)
+
+        # take hiddens from the last layer
+        source_hidden = source_hidden[-1]
+        # target_hidden = target_hidden[-1][alignment]
+
+        # if self.decision_type == "hyp":
+        #     if "eucl" in self.cell_type:
+        #         source_hidden = pmath.expmap0(source_hidden, c=self.c)
+        #         # target_hidden = pmath.expmap0(target_hidden, c=self.c)
+        #     source_projected = self.projector_source(source_hidden)
+        #     # target_projected = self.projector_target(target_hidden)
+        #     # projected = pmath.mobius_add(
+        #     #     source_projected, target_projected, c=self.ball.c
+        #     # )
+        #     # if self.use_distance_as_feature:
+        #     #     dist = (
+        #     #         pmath.dist(source_hidden, target_hidden, dim=-1, keepdim=True, c=self.ball.c) ** 2
+        #     #     )
+        #     #     bias = pmath.mobius_scalar_mul(dist, self.dist_bias, c=self.ball.c)
+        #     projected = pmath.mobius_add(source_projected, bias, c=self.ball.c)
+        # else:
+        #     if "hyp" in self.cell_type:
+        #         source_hidden = pmath.logmap0(source_hidden, c=self.c)
+        #         target_hidden = pmath.logmap0(target_hidden, c=self.c)
+        #     projected = self.projector(
+        #         torch.cat((source_hidden, target_hidden), dim=-1)
+        #     )
+        #     if self.use_distance_as_feature:
+        #         dist = torch.sum(
+        #             (source_hidden - target_hidden).pow(2), dim=-1, keepdim=True
+        #         )
+        #         bias = self.dist_bias * dist
+        #         projected = projected + bias
+
+        logits = self.logits(source_hidden)
+        # CrossEntropy accepts logits
+        return logits

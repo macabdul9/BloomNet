@@ -59,10 +59,10 @@ class AttentionalBiRNN(nn.Module):
         return attended.sum(0,True).squeeze(0)
 
 
-class HAN(nn.Module):
+class HANClassifier(nn.Module):
 
     def __init__(self, ntoken, num_class, emb_size=200, hid_size=50):
-        super(HAN, self).__init__()
+        super(HANClassifier, self).__init__()
 
         self.emb_size = emb_size
         self.embed = nn.Embedding(ntoken, emb_size,padding_idx=0)
@@ -88,10 +88,10 @@ class HAN(nn.Module):
     def forward(self, batch_reviews, sent_order, ls,lr):
 
         emb_w = F.dropout(self.embed(batch_reviews),training=self.training)
-        packed_sents = torch.nn.utils.rnn.pack_padded_sequence(emb_w, ls,batch_first=True)
+        packed_sents = torch.nn.utils.rnn.pack_padded_sequence(emb_w, ls,batch_first=True, enforce_sorted=False)
         sent_embs = self.word(packed_sents)
         rev_embs = self._reorder_sent(sent_embs,sent_order)
-        packed_rev = torch.nn.utils.rnn.pack_padded_sequence(rev_embs, lr,batch_first=True)
+        packed_rev = torch.nn.utils.rnn.pack_padded_sequence(sent_embs, lr,batch_first=True, enforce_sorted=False)
         doc_embs = self.sent(packed_rev)
         out = self.lin_out(doc_embs)
 
