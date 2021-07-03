@@ -27,7 +27,7 @@ def get_loaders(tokenizer, config):
     
     # create dataset2 loader
     
-    test2_loader = DataLoader(dataset=dataset2, batch_size=config['batch_size'], shuffle=False, num_workers=config['num_workers'])
+    test2_loader = DataLoader(dataset=dataset2, batch_size=config['batch_size'], shuffle=False, num_workers=config['num_workers'], drop_last=True)
     
     loaders = {}
     
@@ -41,8 +41,8 @@ def get_loaders(tokenizer, config):
         test_subsampler = SubsetRandomSampler(test_ids)
         
         # Define data loaders for training and testing data in this fold
-        trainloader =DataLoader(dataset=dataset1, batch_size=config['batch_size'], sampler=train_subsampler, num_workers=config['num_workers'])
-        testloader = DataLoader(dataset=dataset1, batch_size=config['batch_size'], sampler=test_subsampler, num_workers=config['num_workers'])
+        trainloader =DataLoader(dataset=dataset1, batch_size=config['batch_size'], sampler=train_subsampler, num_workers=config['num_workers'], drop_last=True)
+        testloader = DataLoader(dataset=dataset1, batch_size=config['batch_size'], sampler=test_subsampler, num_workers=config['num_workers'], drop_last=True)
         
 
         loaders.update({

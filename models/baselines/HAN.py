@@ -4,7 +4,8 @@ from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence, Packed
 
 # Code Taken from: https://github.com/sharkmir1/Hierarchical-Attention-Network/blob/master/model.py
 
-device  = torch.device("cuda")
+# device  = torch.device("cuda")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 class HANClassifier(nn.Module):
     """
     Yang et al. (2016). Hierarchical Attention Networks.
@@ -47,11 +48,13 @@ class HANClassifier(nn.Module):
         docs = input_ids.unsqueeze(1)
         doc_lengths = torch.ones(16, dtype=torch.long, device=device)
         sent_lengths = _len.unsqueeze(1)
+        print(sent_lengths)
+        print(f'Han.py 51 | docs.shape = {docs.shape} | doc_lengths.shape = {doc_lengths.shape} | sent_lengths.shape = {sent_lengths.shape}')
 
         """
         :param docs: encoded document-level data; LongTensor (num_docs, padded_doc_length, padded_sent_length)
         :param doc_lengths: unpadded document lengths; LongTensor (num_docs)
-        :param sent_lengths: unpadded sentence lengths; LongTensor (num_docs, max_sent_len)
+        :param sent_lengths: unpadded sentence lengths; LongTensor (num_docs, padded_doc_length)
         :return: class scores, attention weights of words, attention weights of sentences
         """
         doc_embeds, word_att_weights, sent_att_weights = self.sent_attention(docs, doc_lengths, sent_lengths)

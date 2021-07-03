@@ -43,6 +43,8 @@ class BloomDataset(Dataset):
         )
         
         _len = len(self.tokenizer.tokenize(text))
+        if _len>64:
+            _len = 64
         
         return {
             "input_ids":input_encoding['input_ids'].squeeze(),

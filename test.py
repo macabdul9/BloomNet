@@ -95,36 +95,47 @@ if __name__ == '__main__':
     # )
 
 
-    model = HANClassifier(
-        num_classes=config['data']['num_classes'],
-        vocab_size=tokenizer.vocab_size,
-        embed_dim=config['model']['hidden_size'],
-        word_gru_hidden_dim=config['model']['hidden_size'],
-        sent_gru_hidden_dim=config['model']['hidden_size'],
-        word_gru_num_layers=config['model']['num_layers'],
-        sent_gru_num_layers=config['model']['num_layers'],
-        word_att_dim=config['model']['hidden_size'],
-        sent_att_dim=config['model']['hidden_size'],
-        use_layer_norm=True,
-        dropout=config['model']['dropout']
+    # model = HANClassifier(
+    #     num_classes=config['data']['num_classes'],
+    #     vocab_size=tokenizer.vocab_size,
+    #     embed_dim=config['model']['hidden_size'],
+    #     word_gru_hidden_dim=config['model']['hidden_size'],
+    #     sent_gru_hidden_dim=config['model']['hidden_size'],
+    #     word_gru_num_layers=config['model']['num_layers'],
+    #     sent_gru_num_layers=config['model']['num_layers'],
+    #     word_att_dim=config['model']['hidden_size'],
+    #     sent_att_dim=config['model']['hidden_size'],
+    #     use_layer_norm=True,
+    #     dropout=config['model']['dropout']
 
-    )
+    # )
 
-    # print(model)
+    # # print(model)
 
-    docs = batch['input_ids'].unsqueeze(1)
-    doc_lengths = torch.ones(16, dtype=torch.long)
-    sent_lengths = batch['_len'].unsqueeze(1)
+    # docs = batch['input_ids'].unsqueeze(1)
+    # doc_lengths = torch.ones(16, dtype=torch.long)
+    # sent_lengths = batch['_len'].unsqueeze(1)
 
 
-    scores, word_att_weights, sent_att_weights = model(
-        input_ids=batch['input_ids'],
-        attention_mask=batch['attention_mask'],
-        _len=batch['_len']
-    )
+    # scores, word_att_weights, sent_att_weights = model(
+    #     input_ids=batch['input_ids'],
+    #     attention_mask=batch['attention_mask'],
+    #     _len=batch['_len']
+    # )
 
-    print(scores.shape)
-    # print(docs.shape, doc_lengths.shape, sent_lengths.shape)
+    # print(scores.shape)
+    # # print(docs.shape, doc_lengths.shape, sent_lengths.shape)
+
+
+    for fold in loaders:
+        print("test-1")
+        for i, batch in enumerate(loaders[fold]['test1']):
+            print(f'batch = {i} | input.shape = {batch["input_ids"].shape} | target.shape = {batch["target"].shape}')
+
+        print("test-2")
+        for i, batch in enumerate(loaders[fold]['test2']):
+            print(f'batch = {i} | input.shape = {batch["input_ids"].shape} | target.shape = {batch["target"].shape}')
+        break
 
 
 
