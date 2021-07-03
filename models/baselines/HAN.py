@@ -59,7 +59,8 @@ class HANClassifier(nn.Module):
         # scores = self.out(self.fc(doc_embeds)) # option 1
         scores = self.fc(doc_embeds) # option 2
 
-        return scores, word_att_weights, sent_att_weights
+        return scores
+        # return scores, word_att_weights, sent_att_weights
 
 
 class SentenceAttention(nn.Module):
