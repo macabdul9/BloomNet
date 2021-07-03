@@ -4,6 +4,7 @@ from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence, Packed
 
 # Code Taken from: https://github.com/sharkmir1/Hierarchical-Attention-Network/blob/master/model.py
 
+device  = torch.device("cuda")
 class HANClassifier(nn.Module):
     """
     Yang et al. (2016). Hierarchical Attention Networks.
@@ -44,7 +45,7 @@ class HANClassifier(nn.Module):
     def forward(self, input_ids, attention_mask=None, _len=None):
 
         docs = input_ids.unsqueeze(1)
-        doc_lengths = torch.ones(16, dtype=torch.long)
+        doc_lengths = torch.ones(16, dtype=torch.long, device=device)
         sent_lengths = _len.unsqueeze(1)
 
         """
