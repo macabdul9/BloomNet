@@ -15,15 +15,14 @@ from models.baselines.RCNN import RCNNClassifier
 from models.baselines.SelfAttn import SelfAttnClassifier
 from models.baselines.Seq2SeqAttn import Seq2SeqAttnClassifier
 from models.baselines.HAN import HANClassifier
-
 import torch.nn.functional as F
 
 
 # hyperbolic model or our model
-from models.model import Model
-
+# from models.model import Model
  
 import torch.nn.functional as F
+from config import config
 
 if __name__ == '__main__':
     
@@ -74,28 +73,62 @@ if __name__ == '__main__':
 
     # logits, out, ht = hygru(input)
 
-    model = Model(
+    # model = Model(
+    #     vocab_size=tokenizer.vocab_size,
+    #     num_layers=1,
+    #     bias=True,
+    #     nonlin=None,
+    #     hyperbolic_input=True,
+    #     hyperbolic_hidden_state0=True,
+    #     num_classes=6,
+    #     input_size=768,
+    #     hidden_size=768,
+    #     c=1.0,
+    # )
+
+
+
+    # logits = model(
+    #     input_ids=batch['input_ids'],
+    #     attention_mask=batch['attention_mask'],
+    #     _len=batch['_len']
+    # )
+
+
+    model = HANClassifier(
+        num_classes=config['data']['num_classes'],
         vocab_size=tokenizer.vocab_size,
-        num_layers=1,
-        bias=True,
-        nonlin=None,
-        hyperbolic_input=True,
-        hyperbolic_hidden_state0=True,
-        num_classes=6,
-        input_size=768,
-        hidden_size=768,
-        c=1.0,
+        embed_dim=config['model']['hidden_size'],
+        word_gru_hidden_dim=config['model']['hidden_size'],
+        sent_gru_hidden_dim=config['model']['hidden_size'],
+        word_gru_num_layers=config['model']['num_layers'],
+        sent_gru_num_layers=config['model']['num_layers'],
+        word_att_dim=config['model']['hidden_size'],
+        sent_att_dim=config['model']['hidden_size'],
+        use_layer_norm=True,
+        dropout=config['model']['dropout']
+
     )
 
+    # print(model)
+
+    docs = batch['input_ids'].unsqueeze(1)
+    doc_lengths = torch.ones(16, dtype=torch.long)
+    sent_lengths = batch['_len'].unsqueeze(1)
 
 
-    logits = model(
+    scores, word_att_weights, sent_att_weights = model(
         input_ids=batch['input_ids'],
         attention_mask=batch['attention_mask'],
         _len=batch['_len']
     )
 
-    print(F.cross_entropy(logits, batch['target'].squeeze()))
+    print(scores.shape)
+    # print(docs.shape, doc_lengths.shape, sent_lengths.shape)
+
+
+
+    # print(F.cross_entropy(logits, batch['target'].squeeze()))
 
 
     # print(type(logits))
@@ -133,6 +166,6 @@ if __name__ == '__main__':
     # print(l.data)
     # print(f1, accuracy)
     
-    print(f'logits.shape = {logits.shape}')
+    # print(f'logits.shape = {logits.shape}')
     
     

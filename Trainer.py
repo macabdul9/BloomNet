@@ -20,7 +20,8 @@ from models.baselines.VDCNN import VDCNNClassifier
 from models.baselines.RCNN import RCNNClassifier
 from models.baselines.SelfAttn import SelfAttnClassifier
 from models.baselines.Seq2SeqAttn import Seq2SeqAttnClassifier
-from models.model import Model
+from models.baselines.HAN import HANClassifier
+# from models.model import Model
 
 class LightningModel(pl.LightningModule):
 
@@ -31,18 +32,34 @@ class LightningModel(pl.LightningModule):
         self.config = config
         self.model_name = model_name
         
-        if model_name == "model" or model_name=="hyp" or model_name == "hyrnn":
-            self.model = Model(
-                vocab_size=vocab_size,
-                num_layers=1,
-                bias=True,
-                nonlin=None,
-                hyperbolic_input=True,
-                hyperbolic_hidden_state0=True,
+        # if model_name == "model" or model_name=="hyp" or model_name == "hyrnn":
+        #     self.model = Model(
+        #         vocab_size=vocab_size,
+        #         num_layers=1,
+        #         bias=True,
+        #         nonlin=None,
+        #         hyperbolic_input=True,
+        #         hyperbolic_hidden_state0=True,
+        #         num_classes=config['data']['num_classes'],
+        #         input_size=config['model']['hidden_size'],
+        #         hidden_size=config['model']['hidden_size'],
+        #         c=1.0,
+        #     )
+
+        if model_name == "han":
+            self.model = HANClassifier(
                 num_classes=config['data']['num_classes'],
-                input_size=config['model']['hidden_size'],
-                hidden_size=config['model']['hidden_size'],
-                c=1.0,
+                vocab_size=vocab_size,
+                embed_dim=config['model']['hidden_size'],
+                word_gru_hidden_dim=config['model']['hidden_size'],
+                sent_gru_hidden_dim=config['model']['hidden_size'],
+                word_gru_num_layers=config['model']['num_layers'],
+                sent_gru_num_layers=config['model']['num_layers'],
+                word_att_dim=config['model']['hidden_size'],
+                sent_att_dim=config['model']['hidden_size'],
+                use_layer_norm=True,
+                dropout=config['model']['dropout']
+
             )
 
         elif model_name == 'lstm':
