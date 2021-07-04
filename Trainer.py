@@ -21,6 +21,7 @@ from models.baselines.RCNN import RCNNClassifier
 from models.baselines.SelfAttn import SelfAttnClassifier
 from models.baselines.Seq2SeqAttn import Seq2SeqAttnClassifier
 from models.baselines.HAN import HANClassifier
+from models.BloomNet import BloomNetClassifier
 # from models.model import Model
 
 class LightningModel(pl.LightningModule):
@@ -32,21 +33,14 @@ class LightningModel(pl.LightningModule):
         self.config = config
         self.model_name = model_name
         
-        # if model_name == "model" or model_name=="hyp" or model_name == "hyrnn":
-        #     self.model = Model(
-        #         vocab_size=vocab_size,
-        #         num_layers=1,
-        #         bias=True,
-        #         nonlin=None,
-        #         hyperbolic_input=True,
-        #         hyperbolic_hidden_state0=True,
-        #         num_classes=config['data']['num_classes'],
-        #         input_size=config['model']['hidden_size'],
-        #         hidden_size=config['model']['hidden_size'],
-        #         c=1.0,
-        #     )
+        if model_name == "model" or model_name=="bloomnet" or model_name == None:
+            self.model = BloomNetClassifier(
+                model_name="roberta-base",
+                num_classes=config['data']['num_classes'],
+                
+            )
 
-        if model_name == "han":
+        elif model_name == "han":
             self.model = HANClassifier(
                 num_classes=config['data']['num_classes'],
                 vocab_size=vocab_size,

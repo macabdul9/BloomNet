@@ -47,6 +47,7 @@ class BloomDataset(Dataset):
             _len = 64
         
         return {
+            "text":text,
             "input_ids":input_encoding['input_ids'].squeeze(),
             "attention_mask":input_encoding['attention_mask'].squeeze(),
             "_len":_len,

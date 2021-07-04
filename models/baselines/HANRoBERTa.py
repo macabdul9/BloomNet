@@ -6,6 +6,7 @@ from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence, Packed
 
 # device  = torch.device("cuda")
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 class HANClassifier(nn.Module):
     """
     Yang et al. (2016). Hierarchical Attention Networks.

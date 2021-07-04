@@ -53,7 +53,7 @@ class VDCNNClassifier(nn.Module):
         layers = []
         fc_layers = []
 
-        self.embed = nn.Embedding(vocab_size, hidden_size, padding_idx=0, max_norm=None, norm_type=2, scale_grad_by_freq=False, sparse=False)
+        self.embed = nn.Embedding(vocab_size, hidden_size, padding_idx=0)
         layers.append(nn.Conv1d(hidden_size, 64, kernel_size=3, padding=1))
 
         if depth == 9:
