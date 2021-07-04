@@ -3,6 +3,8 @@ import torch.nn as nn
 from transformers import AutoModel, AutoTokenizer
 
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 class POSModel(nn.Module):
 
 
@@ -39,7 +41,7 @@ class POSModel(nn.Module):
 
     def encode_text(self, text):
 
-        input_ids, attention_mask = torch.empty((0, self.max_length), dtype=torch.long), torch.empty((0, self.max_length), dtype=torch.long)
+        input_ids, attention_mask = torch.empty((0, self.max_length), dtype=torch.long, device=device), torch.empty((0, self.max_length), dtype=torch.long, device=device)
         for each in text:
 
             encoding = self.encoder.encode_plus(
@@ -54,10 +56,10 @@ class POSModel(nn.Module):
 
             # print(f'each_input.shape = {encoding["input_ids"].shape}')
 
-            input_ids = torch.cat((input_ids, encoding['input_ids']), dim=0)
-            attention_mask = torch.cat((attention_mask, encoding['attention_mask']), dim=0)
+            input_ids = torch.cat((input_ids.to(device), encoding['input_ids'].to(device)), dim=0).to(device)
+            attention_mask = torch.cat((attention_mask.to(device), encoding['attention_mask'].to(device)), dim=0)
 
-        return input_ids, attention_mask
+        return input_ids.to(device), attention_mask.to(device)
     
 
     def forward(self, input_ids, attention_mask=None):
@@ -110,7 +112,7 @@ class NERModel(nn.Module):
     def encode_text(self, text):
     
 
-        input_ids, attention_mask = torch.empty((0, self.max_length), dtype=torch.long), torch.empty((0, self.max_length), dtype=torch.long)
+        input_ids, attention_mask = torch.empty((0, self.max_length), dtype=torch.long, device=device), torch.empty((0, self.max_length), dtype=torch.long, device=device)
         for each in text:
 
             encoding = self.encoder.encode_plus(
@@ -123,10 +125,10 @@ class NERModel(nn.Module):
 
             )
             # print(f'each_input.shape = {encoding["input_ids"].shape}')
-            input_ids = torch.cat((input_ids, encoding['input_ids']), dim=0)
-            attention_mask = torch.cat((attention_mask, encoding['attention_mask']), dim=0)
+            input_ids = torch.cat((input_ids.to(device), encoding['input_ids'].to(device)), dim=0).to(device)
+            attention_mask = torch.cat((attention_mask.to(device), encoding['attention_mask'].to(device)), dim=0)
 
-        return input_ids, attention_mask
+        return input_ids.to(device), attention_mask.to(device)
     
 
     def forward(self, input_ids, attention_mask=None):
@@ -164,16 +166,16 @@ class BloomNetClassifier(nn.Module):
     def forward(self, input_ids, attention_mask=None, _len=None):
 
         # last hidden states
-        cls_generic = self.base(input_ids=input_ids, attention_mask=attention_mask)[0][:, 0]
+        cls_generic = self.base(input_ids=input_ids.to(device), attention_mask=attention_mask.to(device))[0][:, 0]
 
-        cls_pos = self.pos(input_ids=input_ids, attention_mask=attention_mask)
+        cls_pos = self.pos(input_ids=input_ids.to(device), attention_mask=attention_mask.to(device))
 
-        cls_ner = self.ner(input_ids=input_ids, attention_mask=attention_mask)
+        cls_ner = self.ner(input_ids=input_ids.to(device), attention_mask=attention_mask.to(device))
 
-        x = torch.cat((cls_generic, cls_pos, cls_ner), dim=1)
+        x = torch.cat((cls_generic, cls_pos, cls_ner), dim=1).to(device)
 
         # pass it to nn classifier
-        logits = self.classifier(x)
+        logits = self.classifier(x.to(device))
 
 
         return logits
