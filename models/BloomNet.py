@@ -8,14 +8,14 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 class POSModel(nn.Module):
 
 
-    def __init__(self, src_model="roberta-base", trg_model="vblagoje/bert-english-uncased-finetuned-pos", freeze=False, max_length=64):
+    def __init__(self, src_model="roberta-base", trg_model="vblagoje/bert-english-uncased-finetuned-pos", freeze=False, max_len=64):
         super(POSModel, self).__init__()
 
 
         self.decoder = AutoTokenizer.from_pretrained(pretrained_model_name_or_path=src_model)
         self.encoder = AutoTokenizer.from_pretrained(pretrained_model_name_or_path=trg_model)
 
-        self.max_length = max_length
+        self.max_len = max_len
 
         self.model = AutoModel.from_pretrained(pretrained_model_name_or_path=trg_model)
 
@@ -47,7 +47,7 @@ class POSModel(nn.Module):
             encoding = self.encoder.encode_plus(
                 text=each,
                 truncation=True,
-                max_length=self.max_length,
+                max_length=self.max_len,
                 return_tensors="pt",
                 return_attention_mask=True,
                 padding="max_length",
@@ -78,14 +78,14 @@ class POSModel(nn.Module):
 class NERModel(nn.Module):
     
 
-    def __init__(self, src_model="roberta-base", trg_model="dslim/bert-base-NER", freeze=False, max_length=64):
+    def __init__(self, src_model="roberta-base", trg_model="dslim/bert-base-NER", freeze=False, max_len=64):
         super(NERModel, self).__init__()
 
 
         self.decoder = AutoTokenizer.from_pretrained(pretrained_model_name_or_path=src_model)
         self.encoder = AutoTokenizer.from_pretrained(pretrained_model_name_or_path=trg_model)
 
-        self.max_length = max_length
+        self.max_len = max_len
 
         self.model = AutoModel.from_pretrained(pretrained_model_name_or_path=trg_model)
 
@@ -118,7 +118,7 @@ class NERModel(nn.Module):
             encoding = self.encoder.encode_plus(
                 text=each,
                 truncation=True,
-                max_length=self.max_length,
+                max_length=self.max_len,
                 return_tensors="pt",
                 return_attention_mask=True,
                 padding="max_length",
@@ -144,15 +144,15 @@ class NERModel(nn.Module):
 
 class BloomNetClassifier(nn.Module):
     
-    def __init__(self, model_name="roberta-base", num_classes=6):
+    def __init__(self, model_name="roberta-base", num_classes=6, max_len=64):
         super(BloomNetClassifier, self).__init__()
         
         # pretrained transformer model as base
         self.base = AutoModel.from_pretrained(pretrained_model_name_or_path=model_name)
 
-        self.pos = POSModel(src_model=model_name, trg_model="vblagoje/bert-english-uncased-finetuned-pos")
+        self.pos = POSModel(src_model=model_name, trg_model="vblagoje/bert-english-uncased-finetuned-pos", max_len=max_len)
 
-        self.ner = NERModel(src_model=model_name, trg_model="dslim/bert-base-NER")
+        self.ner = NERModel(src_model=model_name, trg_model="dslim/bert-base-NER", max_len=max_len)
         
         # nn classifier on top of base model
         self.classifier = nn.Sequential(*[

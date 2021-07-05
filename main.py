@@ -1,6 +1,7 @@
 import os
 import gc
 import json
+import shutil
 import torch
 import argparse
 from tqdm import tqdm
@@ -35,6 +36,9 @@ if __name__=="__main__":
     
     parser.add_argument("--batch", type=int, default=32,
                         help="batch size for training")
+
+    parser.add_argument("--max_len", type=int, default=64,
+                        help="batch size for training")
     
     parser.add_argument("--folds", type=int, default=5,
                         help="number of folds in cross validation")
@@ -54,6 +58,7 @@ if __name__=="__main__":
     config['data']['folds'] = args.folds
     config['training']['lr'] = args.lr
     config['training']['epochs'] = args.epochs
+    config['data']['max_len'] = args.max_len
     
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -162,8 +167,14 @@ if __name__=="__main__":
         del df_1
         del df_2
         del trainer
+    
         torch.cuda.empty_cache()
         gc.collect()
+
+
+        #del checkpoints
+        shutil.rmtree(ckpt_path)
+        
         
         # break # only for debugging
         

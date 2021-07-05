@@ -37,7 +37,8 @@ class LightningModel(pl.LightningModule):
             self.model = BloomNetClassifier(
                 model_name="roberta-base",
                 num_classes=config['data']['num_classes'],
-                
+                max_len=config['data']['max_len']
+
             )
 
         elif model_name == "han":
