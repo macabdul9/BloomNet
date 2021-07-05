@@ -144,8 +144,17 @@ class NERModel(nn.Module):
 
 class BloomNetClassifier(nn.Module):
     
-    def __init__(self, model_name="roberta-base", num_classes=6, max_len=64):
+    def __init__(self, model_name="roberta-base", num_classes=6, max_len=64, fusion="concat"):
+
         super(BloomNetClassifier, self).__init__()
+
+
+        self.fusion = fusion
+
+        if fusion=="concat":
+            n = 3
+        else:
+            n = 1
         
         # pretrained transformer model as base
         self.base = AutoModel.from_pretrained(pretrained_model_name_or_path=model_name)
@@ -156,7 +165,7 @@ class BloomNetClassifier(nn.Module):
         
         # nn classifier on top of base model
         self.classifier = nn.Sequential(*[
-            nn.Linear(in_features=3*768, out_features=768),
+            nn.Linear(in_features=n*768, out_features=768),
             nn.LeakyReLU(),
             nn.Linear(in_features=768, out_features=256),
             nn.LeakyReLU(),
@@ -172,7 +181,10 @@ class BloomNetClassifier(nn.Module):
 
         cls_ner = self.ner(input_ids=input_ids.to(device), attention_mask=attention_mask.to(device))
 
-        x = torch.cat((cls_generic, cls_pos, cls_ner), dim=1).to(device)
+        if self.fusion == "concat":
+            x = torch.cat((cls_generic, cls_pos, cls_ner), dim=1).to(device)
+        else:
+            x = cls_generic*cls_pos*cls_ner #torch.matmul(torch.matmul(cls_generic, cls_pos), cls_ner).to(device)
 
         # pass it to nn classifier
         logits = self.classifier(x.to(device))

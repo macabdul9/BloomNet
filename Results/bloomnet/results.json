@@ -1,0 +1,1 @@
+{"dataset1": {"accuracy": {"mean": 84.64, "std": 3.8}, "macro-f1": {"mean": 84.48, "std": 4.18}}, "dataset2": {"accuracy": {"mean": 65.62, "std": 1.5599999999999998}, "macro-f1": {"mean": 61.88, "std": 2.33}}}

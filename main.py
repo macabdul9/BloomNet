@@ -28,7 +28,7 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser("main.py", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 
-    parser.add_argument("--model", type=str, default="lstm",
+    parser.add_argument("--model", type=str, default="bloomnet",
                         help="model to train")
     
     # parser.add_argument("--model-name", type=str, default="roberta-base",
@@ -49,6 +49,9 @@ if __name__=="__main__":
     parser.add_argument("--epochs", type=int, default=20,
                         help="number of epoch to train for")
 
+    parser.add_argument("--fusion", type=str, default="concat",
+                        help="only applicable for bloomnet")
+
     args = parser.parse_args()
     
     
@@ -59,6 +62,7 @@ if __name__=="__main__":
     config['training']['lr'] = args.lr
     config['training']['epochs'] = args.epochs
     config['data']['max_len'] = args.max_len
+    config['data']['model'] = args.fusion
     
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

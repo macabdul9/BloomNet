@@ -29,7 +29,9 @@ if __name__ == '__main__':
     #     attention_mask=batch['attention_mask']
     # )
 
-    model = BloomNetClassifier()
+    model = BloomNetClassifier(
+        fusion="mul"
+    )
 
 
     logits = model.forward(
