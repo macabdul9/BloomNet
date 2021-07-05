@@ -41,7 +41,7 @@ class POSModel(nn.Module):
 
     def encode_text(self, text):
 
-        input_ids, attention_mask = torch.empty((0, self.max_length), dtype=torch.long, device=device), torch.empty((0, self.max_length), dtype=torch.long, device=device)
+        input_ids, attention_mask = torch.empty((0, self.max_len), dtype=torch.long, device=device), torch.empty((0, self.max_len), dtype=torch.long, device=device)
         for each in text:
 
             encoding = self.encoder.encode_plus(
@@ -112,7 +112,7 @@ class NERModel(nn.Module):
     def encode_text(self, text):
     
 
-        input_ids, attention_mask = torch.empty((0, self.max_length), dtype=torch.long, device=device), torch.empty((0, self.max_length), dtype=torch.long, device=device)
+        input_ids, attention_mask = torch.empty((0, self.max_len), dtype=torch.long, device=device), torch.empty((0, self.max_len), dtype=torch.long, device=device)
         for each in text:
 
             encoding = self.encoder.encode_plus(
