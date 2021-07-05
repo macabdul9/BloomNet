@@ -102,7 +102,7 @@ if __name__=="__main__":
         
         
         # create trainer object
-        trainer = create_trainer(
+        trainer, checkpoint_callback = create_trainer(
             config=config,
             run_name=model+"-"+str(fold),
             ckpt_path=ckpt_path,
@@ -114,6 +114,9 @@ if __name__=="__main__":
             train_dataloader=loaders[fold]['train'],
             val_dataloaders=loaders[fold]['valid'],
         )
+        
+        # load best checkpoints
+        lm.load_from_checkpoint(checkpoint_callback.best_model_path)
         
         trainer.test(
             model=lm,

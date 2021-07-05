@@ -55,7 +55,7 @@ def create_trainer(config, run_name, ckpt_path):
         logger=logger,
         gpus=[0],
         checkpoint_callback=checkpoints,
-        callbacks=[early_stopping],
+        # callbacks=[early_stopping],
         max_epochs=config['training']["epochs"],
         precision=config['callback']["precision"],
         limit_train_batches=1.0,
@@ -63,4 +63,4 @@ def create_trainer(config, run_name, ckpt_path):
         limit_test_batches=1.0,
     )
 
-    return trainer
+    return trainer, checkpoints
