@@ -116,8 +116,8 @@ if __name__=="__main__":
         )
         
         # load best checkpoints
-        lm.load_from_checkpoint(checkpoint_callback.best_model_path)
-        
+        lm = LightningModel.load_from_checkpoint(checkpoint_callback.best_model_path)
+
         trainer.test(
             model=lm,
             test_dataloaders=loaders[fold]['test1'],
