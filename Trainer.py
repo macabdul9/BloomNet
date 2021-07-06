@@ -22,6 +22,7 @@ from models.baselines.SelfAttn import SelfAttnClassifier
 from models.baselines.Seq2SeqAttn import Seq2SeqAttnClassifier
 from models.baselines.HAN import HANClassifier
 from models.BloomNet import BloomNetClassifier
+from models.Bloomnet_han_ling import BloomNet2Classifier
 # from models.model import Model
 
 class LightningModel(pl.LightningModule):
@@ -39,6 +40,10 @@ class LightningModel(pl.LightningModule):
                 num_classes=config['data']['num_classes'],
                 max_len=config['data']['max_len'],
                 fusion=config['model']['fusion'],
+            )
+        elif model_name == "bloomnet2" or model_name == "model2":
+            self.model = BloomNet2Classifier(
+                vocab_size=vocab_size,
             )
 
         elif model_name == "han":

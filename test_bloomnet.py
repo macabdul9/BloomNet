@@ -2,6 +2,7 @@ from config import config
 from dataset.loader import get_loaders
 from models.BloomNet import POSModel, NERModel, BloomNetClassifier
 from transformers import AutoModel, AutoTokenizer, AutoModelForTokenClassification
+from models.Bloomnet_han_ling import WordAttention, BloomNet2Classifier
 
 
 
@@ -29,14 +30,19 @@ if __name__ == '__main__':
     #     attention_mask=batch['attention_mask']
     # )
 
-    model = BloomNetClassifier(
-        fusion="mul"
+    model = BloomNet2Classifier(
+        vocab_size=tokenizer.vocab_size, 
     )
+
+    # model = BloomNetClassifier(
+    #     fusion="mul"
+    # )
 
 
     logits = model.forward(
         input_ids=batch['input_ids'],
-        attention_mask=batch['attention_mask']
+        attention_mask=batch['attention_mask'],
+        _len=batch['_len']
     )
 
     print(f'logits.shape = {logits.shape}')
