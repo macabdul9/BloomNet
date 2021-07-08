@@ -120,7 +120,6 @@ if __name__=="__main__":
         )
         
         # load best checkpoints
-        # lm = LightningModel.load_from_checkpoint(checkpoint_callback.best_model_path)
 
         trainer.test(
             model=lm,
@@ -129,6 +128,7 @@ if __name__=="__main__":
             ckpt_path=checkpoint_callback.best_model_path,
         )
         
+        # lm = LightningModel.load_from_checkpoint(checkpoint_callback.best_model_path)
         
         # get the results and save them into directory
         # for dataset1 and dataset2
