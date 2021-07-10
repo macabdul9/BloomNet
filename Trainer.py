@@ -46,6 +46,8 @@ class LightningModel(pl.LightningModule):
                 vocab_size=vocab_size,
             )
 
+        # joint model
+
         elif model_name == "han":
             self.model = HANClassifier(
                 num_classes=config['data']['num_classes'],
