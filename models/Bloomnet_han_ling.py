@@ -279,7 +279,7 @@ class BloomNet2Classifier(nn.Module):
         
         # nn classifier on top of base model
         self.classifier = nn.Sequential(*[
-            nn.Linear(in_features=3*768, out_features=768),
+            nn.Linear(in_features=5*768, out_features=768),
             nn.LeakyReLU(),
             nn.Linear(in_features=768, out_features=256),
             nn.LeakyReLU(),
@@ -291,9 +291,9 @@ class BloomNet2Classifier(nn.Module):
         # last hidden states
         cls_generic = self.base(input_ids=input_ids.to(device), attention_mask=attention_mask.to(device))[0][:, 0]
 
-        # cls_pos = self.pos(input_ids=input_ids.to(device), attention_mask=attention_mask.to(device))
+        cls_pos = self.pos(input_ids=input_ids.to(device), attention_mask=attention_mask.to(device))
 
-        # cls_ner = self.ner(input_ids=input_ids.to(device), attention_mask=attention_mask.to(device))
+        cls_ner = self.ner(input_ids=input_ids.to(device), attention_mask=attention_mask.to(device))
 
         # if self.fusion == "concat":
         #     x = torch.cat((cls_generic, cls_pos, cls_ner), dim=1).to(device)
@@ -304,7 +304,7 @@ class BloomNet2Classifier(nn.Module):
 
         sents, _ = self.word_attention(sents=input_ids, sent_lengths=_len)
 
-        x = torch.cat((cls_generic, sents), dim=1)
+        x = torch.cat((cls_generic, cls_pos, cls_ner, sents), dim=1)
 
 
         # pass it to nn classifier
