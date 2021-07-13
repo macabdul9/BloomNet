@@ -31,7 +31,7 @@ def get_loaders(tokenizer, config):
     
     loaders = {}
     
-    kfold  = KFold(n_splits=config['folds'], shuffle=True, random_state=42)
+    kfold  = KFold(n_splits=config['folds'], shuffle=False, random_state=42)
 
     
     for fold, (train_ids, test_ids) in enumerate(kfold.split(dataset1)):
@@ -41,8 +41,8 @@ def get_loaders(tokenizer, config):
         test_subsampler = SubsetRandomSampler(test_ids)
         
         # Define data loaders for training and testing data in this fold
-        trainloader =DataLoader(dataset=dataset1, batch_size=config['batch_size'], sampler=train_subsampler, num_workers=config['num_workers'], drop_last=True)
-        testloader = DataLoader(dataset=dataset1, batch_size=config['batch_size'], sampler=test_subsampler, num_workers=config['num_workers'], drop_last=True)
+        trainloader =DataLoader(dataset=dataset1, batch_size=config['batch_size'], shuffle=False, sampler=train_subsampler, num_workers=config['num_workers'], drop_last=True)
+        testloader = DataLoader(dataset=dataset1, batch_size=config['batch_size'], shuffle=False, sampler=test_subsampler, num_workers=config['num_workers'], drop_last=True)
         
 
         loaders.update({
