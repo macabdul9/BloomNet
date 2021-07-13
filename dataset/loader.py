@@ -31,7 +31,7 @@ def get_loaders(tokenizer, config):
     
     loaders = {}
     
-    kfold  = KFold(n_splits=config['folds'], shuffle=False, random_state=42)
+    kfold  = KFold(n_splits=config['folds'], shuffle=None, random_state=42)
 
     
     for fold, (train_ids, test_ids) in enumerate(kfold.split(dataset1)):
