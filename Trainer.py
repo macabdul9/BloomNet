@@ -13,7 +13,7 @@ import geoopt
 from sklearn.metrics import accuracy_score, f1_score
 from models.baselines.LSTM import LSTMClassifier
 from models.baselines.RoBERTa import RoBERTaClassifier
-from models.baselines.DistilRoBERTa import DistilRoBERTaClassifiear
+# from models.baselines.DistilRoBERTa import DistilRoBERTaClassifier
 from models.baselines.LSTMAttn import LSTMAttnClassifier
 from models.baselines.CNN import CNNClassifier
 from models.baselines.VDCNN import VDCNNClassifier
