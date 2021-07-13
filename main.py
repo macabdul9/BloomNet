@@ -125,12 +125,12 @@ if __name__=="__main__":
             model=lm,
             test_dataloaders=loaders[fold]['test1'],
             verbose=True,
-            ckpt_path="best",
+            # ckpt_path="best",
         )
         
-        # lm = LightningModel.load_from_checkpoint(checkpoint_callback.best_model_path)
+        # # lm = LightningModel.load_from_checkpoint(checkpoint_callback.best_model_path)
 
-        lm.load_state_dict(torch.load(checkpoint_callback.best_model_path,)['state_dict'])
+        # lm.load_state_dict(torch.load(checkpoint_callback.best_model_path)['state_dict'])
         
         # get the results and save them into directory
         # for dataset1 and dataset2
