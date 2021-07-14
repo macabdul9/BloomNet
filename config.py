@@ -4,7 +4,7 @@ config = {
         "Label":"Label",
         "num_classes":6,
         "max_len":64,
-        "batch_size":16,
+        "batch_size":4,
         "num_workers":4,
         "folds":5,
     },
