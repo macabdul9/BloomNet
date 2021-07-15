@@ -1,6 +1,15 @@
 # BloomNet
 Bloom Taxonomy Classification
 
+## Paper 
+
+## Results
+
+## instructions to train and evaluate models
+
+
+## Citation
+
 
 ## More Models are here: https://github.com/brightmart/text_classification  
 
