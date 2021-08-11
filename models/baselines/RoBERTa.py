@@ -3,7 +3,7 @@ from transformers import AutoModel, AutoConfig
 
 class RoBERTaClassifier(nn.Module):
 
-    def __init__(self, model_name="roberta-base", num_classes=6):
+    def __init__(self, model_name='microsoft/deberta-base', num_classes=6):
         super(RoBERTaClassifier, self).__init__()
         
         # pretrained transformer model as base
